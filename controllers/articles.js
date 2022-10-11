@@ -2,7 +2,8 @@ const { selectArticleById, incrementArticleVotesById } = require('../models/arti
 
 exports.getAllArticles = (req, res, next) =>
 {
-    selectAllArticles()
+    const { topic, sort_by, order } = req.query;
+    selectAllArticles(topic, sort_by, order)
     .then((articles) =>
     {
         res.status(200).send({articles});
