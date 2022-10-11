@@ -42,6 +42,25 @@ const db = require('../db/connection');
 // };
 
 
+exports.selectCommentsByArticleId = (id) =>
+{
+    return db.query(`SELECT * FROM comments WHERE article_id=$1`, [id])
+    .then(({rows}) =>
+    {
+        if (!rows.length)
+        {
+            const err = new Error(`Not found.`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+        return rows;
+    })
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+}
+
 exports.selectArticleById = (id) =>
 {
     return db.query(`SELECT * FROM articles WHERE article_id=${id};`)
@@ -49,7 +68,7 @@ exports.selectArticleById = (id) =>
     {
         if (!rows.length)
         {
-            const err = new Error(`Article ID: ${id} not found,`);
+            const err = new Error(`Article ID: ${id} not found.`);
             err.status = 404;
             return Promise.reject(err);
         }

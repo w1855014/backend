@@ -1,4 +1,4 @@
-const { selectArticleById, incrementArticleVotesById } = require('../models/articles');
+const { selectArticleById, selectCommentsByArticleId, incrementArticleVotesById } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
 {
@@ -20,6 +20,20 @@ exports.getArticleById = (req, res, next) =>
     .then((article) =>
     {
         res.status(200).send({article});
+    })
+    .catch((err) =>
+    {
+        next(err);
+    });
+}
+
+exports.getCommentsByArticleID = (req, res, next) =>
+{
+    const { article_id } = req.params;
+    selectCommentsByArticleId(article_id)
+    .then((comments) =>
+    {
+        res.status(200).send({comments});
     })
     .catch((err) =>
     {

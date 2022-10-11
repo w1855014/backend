@@ -88,6 +88,59 @@ describe('articles', () =>
         });
     });
 
+    describe('GET /api/articles/:article_id/comments', () =>
+    {
+        test('200: responds with array of comments', () =>
+        {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                expect(comments).toBeInstanceOf(Array);
+                expect(comments.length).toBe(11);
+                comments.forEach(comment =>
+                {
+                    expect(comment).toEqual(expect.objectContaining
+                    ({
+                        comment_id: expect.any(Number),
+                        body: expect.any(String),
+                        votes: expect.any(Number),    
+                        author: expect.any(String),
+                        article_id: expect.any(Number),
+                        created_at: expect.any(String)
+                    }));
+                });
+            });
+        })
+        test('200: filters comments by article', () =>
+        {
+            return request(app)
+            .get('/api/articles/6/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                comments.forEach(comment =>
+                {
+                    expect(comment.article_id).toBe(6);
+                });
+            });
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .get('/api/articles/999/comments')
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
+        });
+    });
+
     describe('PATCH /api/articles/:article_id', () =>
     {
         test('200: responds with updated object containing expected values', () =>
