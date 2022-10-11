@@ -78,7 +78,23 @@ exports.incrementArticleVotesById = (id, inc_votes) =>
             err.status = 404;
             return Promise.reject(err);
         }
-        console.log(rows)
         return rows[0];
     })
+}
+
+exports.insertCommentByArticleId = (id, username, body) =>
+{
+    return db.query(`INSERT INTO comments (body, article_id, author)
+    VALUES ($1, $2, $3) RETURNING *;`, [body, id, username])
+    .then(({rows}) =>
+    {
+        console.log(rows);
+        if (!rows.length)
+        {
+            const err = new Error(`Not found.`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+        return rows[0];
+    });
 }
