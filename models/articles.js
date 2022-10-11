@@ -1,25 +1,35 @@
 const db = require('../db/connection');
 
-// exports.selectAllArticles = (topic) =>
-// {
-//     if (topic===undefined)
-//     {
-//         return db.query(`SELECT * FROM articles ORDER BY created_at DESC;`)
-//         .then(({rows}) =>
-//         {
-//             return rows;
-//         })
-//     }
-//     return db.query(`SELECT * FROM articles WHERE topic.slug = $1`, [topic])
-//     .then(({rows}) =>
-//     {
-//         return rows;
-//     })
-//     .catch((err) =>
-//     {
-//         return Promise.reject(err);
-//     });
-// }
+exports.selectAllArticles = (topic, sort_by = "created_at", order = "DESC") =>
+{
+    const validOrderQueries = ["ASC", "DESC"];
+    const validSortQueries = ["article_id", "title", "topic", "author", "body", "created_at", "votes"];
+
+    if (!validSortQueries.includes(sort_by)) return Promise.reject({status:400, message: "Invalid sort query."});
+    if (!validOrderQueries.includes(order)) return Promise.reject({status:400, message: "Invalid order query."});
+
+    // if (topic===undefined)
+    // {
+    //     return db.query(`SELECT *,
+    //     (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    //     AS comment_count FROM articles a ORDER BY ${sort_by} ${order};`)
+    //     .then(({rows}) =>
+    //     {
+    //         return rows;
+    //     })
+    // }
+    return db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a WHERE a.topic = $1 ORDER BY ${sort_by} ${order};`, [(topic) ? "WHERE a.topic = $1" : ""])
+    .then(({rows}) =>
+    {
+        return rows;
+    })
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+}
 
 // exports.selectArticleById = (id) =>
 // {
