@@ -1,25 +1,55 @@
 const db = require('../db/connection');
 
-// exports.selectAllArticles = (topic) =>
-// {
-//     if (topic===undefined)
-//     {
-//         return db.query(`SELECT * FROM articles ORDER BY created_at DESC;`)
-//         .then(({rows}) =>
-//         {
-//             return rows;
-//         })
-//     }
-//     return db.query(`SELECT * FROM articles WHERE topic.slug = $1`, [topic])
-//     .then(({rows}) =>
-//     {
-//         return rows;
-//     })
-//     .catch((err) =>
-//     {
-//         return Promise.reject(err);
-//     });
-// }
+
+
+exports.selectArticleById = (id) =>
+{
+    return db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a WHERE article_id = $1;`, [id])
+    .then(({rows}) =>
+    {
+        console.log(rows);
+        if (!rows.length)
+        {
+            const err = new Error(`Not found,`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+        return rows[0];
+    })
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+};
+
+
+
+exports.selectAllArticles = (topic) =>
+{
+    if (topic===undefined)
+    {
+        return db.query(`SELECT *,
+        (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+        AS comment_count FROM articles a ORDER BY created_at DESC;`)
+        .then(({rows}) =>
+        {
+            return rows;
+        })
+    }
+    return db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a WHERE a.topic = $1 ORDER BY created_at DESC;`, [topic])
+    .then(({rows}) =>
+    {
+        return rows;
+    })
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+}
 
 // exports.selectArticleById = (id) =>
 // {

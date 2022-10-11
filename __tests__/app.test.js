@@ -1,4 +1,5 @@
 const request = require('supertest');
+const sorted = require('jest-sorted');
 const app = require('../app');
 const db = require('../db/connection');
 
@@ -52,6 +53,63 @@ describe('topics', () =>
 
 describe('articles', () =>
 {
+    describe('GET /api/articles', () =>
+    {
+        test('200: responds with array of articles', () =>
+        {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeInstanceOf(Array);
+                expect(articles.length).toBe(12);
+                articles.forEach(article =>
+                {
+                    expect(article).toEqual(expect.objectContaining
+                    ({
+                        article_id: expect.any(Number),
+                        title: expect.any(String),
+                        topic: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number)
+                    }));
+                });
+            });
+        });
+        test('200: sorts array by date in DESC order', () =>
+        {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeSortedBy('created_at', {descending: true});
+            });
+        });
+        test('200: filters by topic query', () =>
+        {
+            return request(app)
+            .get('/api/articles?topic=mitch')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles.length).toBe(11);
+                articles.forEach(article =>
+                {
+                    expect(article.topic).toBe("mitch");
+                });
+            })
+        });
+    });
+
+
+
     describe('GET /api/articles/:article_id', () =>
     {
         test('200: responds with object containing expected values', () =>
