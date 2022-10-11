@@ -75,6 +75,17 @@ describe('articles', () =>
                 });
             });
         });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .patch('/api/articles/any')
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
+        });
     });
 
     describe('PATCH /api/articles/:article_id', () =>
@@ -106,14 +117,24 @@ describe('articles', () =>
             return request(app)
             .patch('/api/articles/1')
             .send({inc_votes: null})
-            .expect(400);
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
         });
         test('404: returns not found', () =>
         {
             return request(app)
             .patch('/api/articles/999')
             .send({inc_votes: 1})
-            .expect(404);
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
         });
     })
 });

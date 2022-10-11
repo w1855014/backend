@@ -21,12 +21,32 @@ const db = require('../db/connection');
 //     });
 // }
 
+// exports.selectArticleById = (id) =>
+// {
+//     return db.query(`SELECT *, count(article_id) FROM articles, comments WHERE article_id=${id} AND comments.article_id = article_id GROUP BY article_id;`)
+//     .then(({rows}) =>
+//     {
+//         console.log(rows);
+//         if (!rows.length)
+//         {
+//             const err = new Error(`Article ID: ${id} not found,`);
+//             err.status = 404;
+//             return Promise.reject(err);
+//         }
+//         return rows[0];
+//     })
+//     .catch((err) =>
+//     {
+//         return Promise.reject(err);
+//     });
+// };
+
+
 exports.selectArticleById = (id) =>
 {
     return db.query(`SELECT * FROM articles WHERE article_id=${id};`)
     .then(({rows}) =>
     {
-        console.log(rows);
         if (!rows.length)
         {
             const err = new Error(`Article ID: ${id} not found,`);
@@ -43,30 +63,22 @@ exports.selectArticleById = (id) =>
 
 exports.incrementArticleVotesById = (id, inc_votes) =>
 {
-    if(isNaN(parseInt(id)) || isNaN(parseInt(inc_votes)))
-    {
-        const err = new Error("Bad request.");
-        err.status = 400;
-        return Promise.reject(err);
-    }
-    return db.query(`UPDATE articles SET votes = votes + $2 WHERE article_id = $1;`, [id, inc_votes])
-    .then(() =>
-    {
-        return db.query(`SELECT * FROM articles WHERE article_id = $1;`, [id]);
-    })
+    // if(isNaN(parseInt(id)) || isNaN(parseInt(inc_votes)))
+    // {
+    //     const err = new Error("Bad request.");
+    //     err.status = 400;
+    //     return Promise.reject(err);
+    // }
+    return db.query(`UPDATE articles SET votes = votes + $2 WHERE article_id = $1 RETURNING*;`, [id, inc_votes])
     .then(({rows}) =>
     {
         if (!rows.length)
         {
-            const err = new Error(`Article ID: ${id} not found,`);
+            const err = new Error(`Not found.`);
             err.status = 404;
             return Promise.reject(err);
         }
         console.log(rows)
         return rows[0];
     })
-    .catch((err) =>
-    {
-        return Promise.reject(err);
-    });
 }
