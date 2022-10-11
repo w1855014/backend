@@ -7,6 +7,22 @@ afterAll(() =>
     db.end();
 })
 
+
+describe('invalid endpoint', () =>
+{
+    test('404: returns invalid endpoint', () =>
+    {
+        return request(app)
+        .get('/any')
+        .expect(404)
+        .then(({body}) =>
+        {
+            const {msg} = body;
+            expect(msg).toBe("Invalid endpoint.")
+        })
+    })
+})
+
 describe('topics', () =>
 {
     describe('GET /api/topics', () =>
@@ -20,7 +36,7 @@ describe('topics', () =>
             {
                 const {topics} = body;
                 expect(topics).toBeInstanceOf(Array);
-                expect(topics.length).toBeTruthy();
+                expect(topics.length).toBe(3);
                 topics.forEach(topic =>
                 {
                     expect(topic).toEqual(expect.objectContaining
