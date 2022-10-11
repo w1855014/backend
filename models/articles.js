@@ -18,9 +18,18 @@ exports.selectAllArticles = (topic, sort_by = "created_at", order = "DESC") =>
     //         return rows;
     //     })
     // }
-    return db.query(`SELECT *,
+
+    return (topic)
+    ? db.query(`SELECT *,
     (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
-    AS comment_count FROM articles a WHERE a.topic = $1 ORDER BY ${sort_by} ${order};`, [(topic) ? "WHERE a.topic = $1" : ""])
+    AS comment_count FROM articles a WHERE a.topic = $1 ORDER BY ${sort_by} ${order};`, [topic])
+    .then(({rows}) =>
+    {
+        return rows;
+    })
+    : db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a ORDER BY ${sort_by} ${order};`)
     .then(({rows}) =>
     {
         return rows;

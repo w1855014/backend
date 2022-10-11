@@ -1,4 +1,4 @@
-const { selectArticleById, incrementArticleVotesById } = require('../models/articles');
+const { selectAllArticles, selectArticleById, incrementArticleVotesById } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
 {
