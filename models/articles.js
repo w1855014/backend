@@ -1,25 +1,25 @@
 const db = require('../db/connection');
 
-exports.selectAllArticles = (topic) =>
-{
-    if (topic===undefined)
-    {
-        return db.query(`SELECT * FROM articles ORDER BY created_at DESC;`)
-        .then(({rows}) =>
-        {
-            return rows;
-        })
-    }
-    return db.query(`SELECT * FROM articles WHERE topic.slug = $1`, [topic])
-    .then(({rows}) =>
-    {
-        return rows;
-    })
-    .catch((err) =>
-    {
-        return Promise.reject(err);
-    });
-}
+// exports.selectAllArticles = (topic) =>
+// {
+//     if (topic===undefined)
+//     {
+//         return db.query(`SELECT * FROM articles ORDER BY created_at DESC;`)
+//         .then(({rows}) =>
+//         {
+//             return rows;
+//         })
+//     }
+//     return db.query(`SELECT * FROM articles WHERE topic.slug = $1`, [topic])
+//     .then(({rows}) =>
+//     {
+//         return rows;
+//     })
+//     .catch((err) =>
+//     {
+//         return Promise.reject(err);
+//     });
+// }
 
 // exports.selectArticleById = (id) =>
 // {
