@@ -5,13 +5,13 @@ const db = require('./db/connection');
 const topicRouter = require('./routes/topics');
 const articleRouter = require('./routes/articles');
 const userRouter = require('./routes/users');
-
+const commentRouter = require('./routes/comments');
 app.use(express.json());
 
 app.use('/api/topics', topicRouter);
 app.use('/api/articles', articleRouter);
 app.use('/api/users', userRouter);
-// app.use('/api/comments', require('./routes/comments'));
+app.use('/api/comments', commentRouter);
 
 app.use('/*', (req, res, next) =>
 {
