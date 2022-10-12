@@ -1,8 +1,9 @@
-const { selectArticleById, selectCommentsByArticleId, incrementArticleVotesById } = require('../models/articles');
+const { selectArticleById, selectCommentsByArticleId, selectArticleById, incrementArticleVotesById } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
 {
-    selectAllArticles()
+    const { topic } = req.query;
+    selectAllArticles(topic)
     .then((articles) =>
     {
         res.status(200).send({articles});
