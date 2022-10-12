@@ -1,4 +1,5 @@
 const request = require('supertest');
+const sorted = require('jest-sorted');
 const app = require('../app');
 const db = require('../db/connection');
 
@@ -52,6 +53,63 @@ describe('topics', () =>
 
 describe('articles', () =>
 {
+    describe('GET /api/articles', () =>
+    {
+        test('200: responds with array of articles', () =>
+        {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeInstanceOf(Array);
+                expect(articles.length).toBe(12);
+                articles.forEach(article =>
+                {
+                    expect(article).toEqual(expect.objectContaining
+                    ({
+                        article_id: expect.any(Number),
+                        title: expect.any(String),
+                        topic: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number)
+                    }));
+                });
+            });
+        });
+        test('200: sorts array by date in DESC order', () =>
+        {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeSortedBy('created_at', {descending: true});
+            });
+        });
+        test('200: filters by topic query', () =>
+        {
+            return request(app)
+            .get('/api/articles?topic=mitch')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles.length).toBe(11);
+                articles.forEach(article =>
+                {
+                    expect(article.topic).toBe("mitch");
+                });
+            })
+        });
+    });
+
+
+
     describe('GET /api/articles/:article_id', () =>
     {
         test('200: responds with object containing expected values', () =>
@@ -71,7 +129,8 @@ describe('articles', () =>
                     author: "butter_bridge",
                     body: "I find this existence challenging",
                     created_at: "2020-07-09T20:11:00.000Z",
-                    votes: 100
+                    votes: 100,
+                    comment_count: "11"
                 });
             });
         });
@@ -84,6 +143,59 @@ describe('articles', () =>
             {
                 const {msg} = body;
                 expect(msg).toBe("Bad request.")
+            })
+        });
+    });
+
+    describe('GET /api/articles/:article_id/comments', () =>
+    {
+        test('200: responds with array of comments', () =>
+        {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                expect(comments).toBeInstanceOf(Array);
+                expect(comments.length).toBe(11);
+                comments.forEach(comment =>
+                {
+                    expect(comment).toEqual(expect.objectContaining
+                    ({
+                        comment_id: expect.any(Number),
+                        body: expect.any(String),
+                        votes: expect.any(Number),    
+                        author: expect.any(String),
+                        article_id: expect.any(Number),
+                        created_at: expect.any(String)
+                    }));
+                });
+            });
+        })
+        test('200: filters comments by article', () =>
+        {
+            return request(app)
+            .get('/api/articles/6/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                comments.forEach(comment =>
+                {
+                    expect(comment.article_id).toBe(6);
+                });
+            });
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .get('/api/articles/999/comments')
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
             })
         });
     });
