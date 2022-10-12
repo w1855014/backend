@@ -40,35 +40,18 @@ exports.selectAllArticles = (topic, sort_by = "created_at", order = "DESC") =>
     });
 }
 
-// exports.selectArticleById = (id) =>
-// {
-//     return db.query(`SELECT *, count(article_id) FROM articles, comments WHERE article_id=${id} AND comments.article_id = article_id GROUP BY article_id;`)
-//     .then(({rows}) =>
-//     {
-//         console.log(rows);
-//         if (!rows.length)
-//         {
-//             const err = new Error(`Article ID: ${id} not found,`);
-//             err.status = 404;
-//             return Promise.reject(err);
-//         }
-//         return rows[0];
-//     })
-//     .catch((err) =>
-//     {
-//         return Promise.reject(err);
-//     });
-// };
-
 
 exports.selectArticleById = (id) =>
 {
-    return db.query(`SELECT * FROM articles WHERE article_id=${id};`)
+    return db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a WHERE article_id = $1;`, [id])
     .then(({rows}) =>
     {
+        console.log(rows);
         if (!rows.length)
         {
-            const err = new Error(`Article ID: ${id} not found,`);
+            const err = new Error(`Not found,`);
             err.status = 404;
             return Promise.reject(err);
         }
@@ -79,6 +62,48 @@ exports.selectArticleById = (id) =>
         return Promise.reject(err);
     });
 };
+
+
+exports.selectCommentsByArticleId = (id) =>
+{
+    return db.query(`SELECT * FROM comments WHERE article_id=$1`, [id])
+    .then(({rows}) =>
+    {
+        if (!rows.length)
+        {
+            const err = new Error(`Not found.`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+    }
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+}
+
+exports.selectArticleById = (id) =>
+{
+    return db.query(`SELECT *,
+    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
+    AS comment_count FROM articles a WHERE article_id = $1;`, [id])
+    .then(({rows}) =>
+    {
+        console.log(rows);
+        if (!rows.length)
+        {
+            const err = new Error(`Not found,`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+        return rows[0];
+    })
+    .catch((err) =>
+    {
+        return Promise.reject(err);
+    });
+};
+
 
 exports.incrementArticleVotesById = (id, inc_votes) =>
 {
@@ -97,7 +122,23 @@ exports.incrementArticleVotesById = (id, inc_votes) =>
             err.status = 404;
             return Promise.reject(err);
         }
-        console.log(rows)
         return rows[0];
     })
+}
+
+exports.insertCommentByArticleId = (id, username, body) =>
+{
+    return db.query(`INSERT INTO comments (body, article_id, author)
+    VALUES ($1, $2, $3) RETURNING *;`, [body, id, username])
+    .then(({rows}) =>
+    {
+        console.log(rows);
+        if (!rows.length)
+        {
+            const err = new Error(`Not found.`);
+            err.status = 404;
+            return Promise.reject(err);
+        }
+        return rows[0];
+    });
 }

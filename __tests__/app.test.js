@@ -53,7 +53,7 @@ describe('topics', () =>
 
 describe('articles', () =>
 {
-    describe.only('GET /api/articles', () =>
+    describe('GET /api/articles', () =>
     {
         test('200: responds with array of articles', () =>
         {
@@ -81,6 +81,7 @@ describe('articles', () =>
             });
         });
         test('200: sorts array by date in DESC order by default', () =>
+
         {
             return request(app)
             .get('/api/articles')
@@ -150,7 +151,8 @@ describe('articles', () =>
                     author: "butter_bridge",
                     body: "I find this existence challenging",
                     created_at: "2020-07-09T20:11:00.000Z",
-                    votes: 100
+                    votes: 100,
+                    comment_count: "11"
                 });
             });
         });
@@ -163,6 +165,59 @@ describe('articles', () =>
             {
                 const {msg} = body;
                 expect(msg).toBe("Bad request.")
+            })
+        });
+    });
+
+    describe('GET /api/articles/:article_id/comments', () =>
+    {
+        test('200: responds with array of comments', () =>
+        {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                expect(comments).toBeInstanceOf(Array);
+                expect(comments.length).toBe(11);
+                comments.forEach(comment =>
+                {
+                    expect(comment).toEqual(expect.objectContaining
+                    ({
+                        comment_id: expect.any(Number),
+                        body: expect.any(String),
+                        votes: expect.any(Number),    
+                        author: expect.any(String),
+                        article_id: expect.any(Number),
+                        created_at: expect.any(String)
+                    }));
+                });
+            });
+        })
+        test('200: filters comments by article', () =>
+        {
+            return request(app)
+            .get('/api/articles/6/comments')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comments} = body;
+                comments.forEach(comment =>
+                {
+                    expect(comment.article_id).toBe(6);
+                });
+            });
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .get('/api/articles/999/comments')
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
             })
         });
     });
@@ -208,6 +263,55 @@ describe('articles', () =>
             return request(app)
             .patch('/api/articles/999')
             .send({inc_votes: 1})
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
+        });
+    });
+
+    describe('POST /api/articles/:article_id/comments', () =>
+    {
+        test('201: posts new comment with specified values', () =>
+        {
+            return request(app)
+            .post('/api/articles/6/comments')
+            .send({username: "icellusedkars", body: "Amazing."})
+            .expect(201)
+            .then(({body}) =>
+            {
+                const {comment} = body;
+                expect(comment).toBeInstanceOf(Object);
+                expect(comment).toEqual(
+                {
+                    comment_id: 19,
+                    body: "Amazing.",
+                    article_id: 6,
+                    author: "icellusedkars",
+                    votes: 0,
+                    created_at: expect.any(String)
+                });
+            });
+        });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .post('/api/articles/6/comments')
+            .send({username: "icellusedkars", body: null})
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .post('/api/articles/999/comments')
+            .send({username: "icellusedkars", body: "Amazing."})
             .expect(404)
             .then(({body}) =>
             {
