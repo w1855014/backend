@@ -80,7 +80,8 @@ describe('articles', () =>
                 });
             });
         });
-        test('200: sorts array by date in DESC order', () =>
+        test('200: sorts array by date in DESC order by default', () =>
+
         {
             return request(app)
             .get('/api/articles')
@@ -91,7 +92,30 @@ describe('articles', () =>
                 expect(articles).toBeSortedBy('created_at', {descending: true});
             });
         });
-        test('200: filters by topic query', () =>
+        test('200: sorts array by specified column', () =>
+        {
+            return request(app)
+            .get('/api/articles?sort_by=author')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeSortedBy("author", {descending:true});
+            });
+        });
+        test('200: orders array by specified parameter', () =>
+        {
+            return request(app)
+            .get('/api/articles?order=ASC')
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {articles} = body;
+                expect(articles).toBeSortedBy("created_at", {descending:false});
+            });
+        });
+
+        test('200: filters by specified topic query', () =>
         {
             return request(app)
             .get('/api/articles?topic=mitch')
@@ -107,8 +131,6 @@ describe('articles', () =>
             })
         });
     });
-
-
 
     describe('GET /api/articles/:article_id', () =>
     {
