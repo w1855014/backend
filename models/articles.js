@@ -8,17 +8,6 @@ exports.selectAllArticles = (topic, sort_by = "created_at", order = "DESC") =>
     if (!validSortQueries.includes(sort_by)) return Promise.reject({status:400, message: "Invalid sort query."});
     if (!validOrderQueries.includes(order)) return Promise.reject({status:400, message: "Invalid order query."});
 
-    // if (topic===undefined)
-    // {
-    //     return db.query(`SELECT *,
-    //     (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
-    //     AS comment_count FROM articles a ORDER BY ${sort_by} ${order};`)
-    //     .then(({rows}) =>
-    //     {
-    //         return rows;
-    //     })
-    // }
-
     return (topic)
     ? db.query(`SELECT *,
     (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
@@ -66,7 +55,7 @@ exports.selectArticleById = (id) =>
 
 exports.selectCommentsByArticleId = (id) =>
 {
-    return db.query(`SELECT * FROM comments WHERE article_id=$1`, [id])
+    return db.query(`SELECT * FROM comments WHERE article_id=$1;`, [id])
     .then(({rows}) =>
     {
         if (!rows.length)
@@ -75,44 +64,16 @@ exports.selectCommentsByArticleId = (id) =>
             err.status = 404;
             return Promise.reject(err);
         }
-    }
+        return rows;
+    })
     .catch((err) =>
     {
         return Promise.reject(err);
     });
 }
 
-exports.selectArticleById = (id) =>
-{
-    return db.query(`SELECT *,
-    (SELECT count(*) FROM comments c WHERE c.article_id = a.article_id)
-    AS comment_count FROM articles a WHERE article_id = $1;`, [id])
-    .then(({rows}) =>
-    {
-        console.log(rows);
-        if (!rows.length)
-        {
-            const err = new Error(`Not found,`);
-            err.status = 404;
-            return Promise.reject(err);
-        }
-        return rows[0];
-    })
-    .catch((err) =>
-    {
-        return Promise.reject(err);
-    });
-};
-
-
 exports.incrementArticleVotesById = (id, inc_votes) =>
 {
-    // if(isNaN(parseInt(id)) || isNaN(parseInt(inc_votes)))
-    // {
-    //     const err = new Error("Bad request.");
-    //     err.status = 400;
-    //     return Promise.reject(err);
-    // }
     return db.query(`UPDATE articles SET votes = votes + $2 WHERE article_id = $1 RETURNING*;`, [id, inc_votes])
     .then(({rows}) =>
     {

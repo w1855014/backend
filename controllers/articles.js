@@ -1,4 +1,4 @@
-const { selectArticleById, selectCommentsByArticleId, selectArticleById, incrementArticleVotesById, insertCommentByArticleId } = require('../models/articles');
+const { selectAllArticles, selectArticleById, selectCommentsByArticleId, incrementArticleVotesById, insertCommentByArticleId } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
 {
