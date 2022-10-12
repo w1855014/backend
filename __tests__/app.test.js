@@ -248,6 +248,55 @@ describe('articles', () =>
                 expect(msg).toBe("Not found.")
             })
         });
+    });
+
+    describe('POST /api/articles/:article_id/comments', () =>
+    {
+        test('201: posts new comment with specified values', () =>
+        {
+            return request(app)
+            .post('/api/articles/6/comments')
+            .send({username: "icellusedkars", body: "Amazing."})
+            .expect(201)
+            .then(({body}) =>
+            {
+                const {comment} = body;
+                expect(comment).toBeInstanceOf(Object);
+                expect(comment).toEqual(
+                {
+                    comment_id: 19,
+                    body: "Amazing.",
+                    article_id: 6,
+                    author: "icellusedkars",
+                    votes: 0,
+                    created_at: expect.any(String)
+                });
+            });
+        });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .post('/api/articles/6/comments')
+            .send({username: "icellusedkars", body: null})
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .post('/api/articles/999/comments')
+            .send({username: "icellusedkars", body: "Amazing."})
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
+        });
     })
 });
 
