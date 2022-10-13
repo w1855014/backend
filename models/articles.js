@@ -58,6 +58,7 @@ exports.selectCommentsByArticleId = (id) =>
     return db.query(`SELECT * FROM comments WHERE article_id=$1;`, [id])
     .then(({rows}) =>
     {
+        console.log(`--------------------->${rows}`)
         if (!rows.length)
         {
             const err = new Error(`Not found.`);
