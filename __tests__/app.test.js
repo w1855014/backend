@@ -2,12 +2,18 @@ const request = require('supertest');
 const sorted = require('jest-sorted');
 const app = require('../app');
 const db = require('../db/connection');
+const seed = require('../db/seeds/seed');
+const testData = require('../db/data/test-data');
 
 afterAll(() =>
 {
     db.end();
-})
+});
 
+beforeEach(() =>
+{
+    return seed(testData);
+});
 
 describe('invalid endpoint', () =>
 {
@@ -255,7 +261,7 @@ describe('articles', () =>
             .then(({body}) =>
             {
                 const {msg} = body;
-                expect(msg).toBe("Bad request.")
+                expect(msg).toBe(`"inc_votes" must be a number`);
             })
         });
         test('404: returns not found', () =>
