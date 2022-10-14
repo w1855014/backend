@@ -1,3 +1,5 @@
+const Joi = require('joi');
+
 const { selectAllArticles, selectArticleById, selectCommentsByArticleId, incrementArticleVotesById, insertCommentByArticleId } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
@@ -44,7 +46,6 @@ exports.getCommentsByArticleID = (req, res, next) =>
 
 exports.patchArticleVotesById = (req, res, next) =>
 {
-    const Joi = require('joi');
     const schema = Joi.object
     ({
         inc_votes: Joi.number().integer().min(1)
