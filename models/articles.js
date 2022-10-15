@@ -40,9 +40,7 @@ exports.selectArticleById = (id) =>
         console.log(rows);
         if (!rows.length)
         {
-            const err = new Error(`Not found,`);
-            err.status = 404;
-            return Promise.reject(err);
+            return Promise.reject({message: "Not found.", status:404});
         }
         return rows[0];
     })
@@ -58,18 +56,29 @@ exports.selectCommentsByArticleId = (id) =>
     return db.query(`SELECT * FROM comments WHERE article_id=$1;`, [id])
     .then(({rows}) =>
     {
-        console.log(`--------------------->${rows}`)
         if (!rows.length)
         {
-            const err = new Error(`Not found.`);
-            err.status = 404;
-            return Promise.reject(err);
+            return Promise.reject({message: "Not found.", status:404});
         }
         return rows;
     })
     .catch((err) =>
     {
         return Promise.reject(err);
+    });
+}
+
+exports.insertArticle = (title, topic, author, body) =>
+{
+    return db.query(`INSERT INTO articles (title, topic, author, body) VALUES ($1, $2, $3, $4)
+    RETURNING *;`, [title, topic, author, body])
+    .then(({rows}) =>
+    {
+        if (!rows.length)
+        {
+            return Promise.reject({message: "Not found.", status:404});
+        }
+        return rows[0];
     });
 }
 
@@ -80,9 +89,7 @@ exports.incrementArticleVotesById = (id, inc_votes) =>
     {
         if (!rows.length)
         {
-            const err = new Error(`Not found.`);
-            err.status = 404;
-            return Promise.reject(err);
+            return Promise.reject({message: "Not found.", status:404});
         }
         return rows[0];
     })
@@ -97,9 +104,7 @@ exports.insertCommentByArticleId = (id, username, body) =>
         console.log(rows);
         if (!rows.length)
         {
-            const err = new Error(`Not found.`);
-            err.status = 404;
-            return Promise.reject(err);
+            return Promise.reject({message: "Not found.", status:404});
         }
         return rows[0];
     });

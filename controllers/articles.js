@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const { selectAllArticles, selectArticleById, selectCommentsByArticleId, incrementArticleVotesById, insertCommentByArticleId } = require('../models/articles');
+const { selectAllArticles, selectArticleById, selectCommentsByArticleId, insertArticle, incrementArticleVotesById, insertCommentByArticleId } = require('../models/articles');
 
 exports.getAllArticles = (req, res, next) =>
 {
@@ -44,13 +44,27 @@ exports.getCommentsByArticleID = (req, res, next) =>
     });
 }
 
+exports.postArticle = (req, res, next) =>
+{
+    const {title, topic, author, body} = req.body;
+    insertArticle(title, topic, author, body)
+    .then((article) =>
+    {
+        res.status(201).send({article});
+    })
+    .catch((err) =>
+    {
+        next(err);
+    });
+}
+
 exports.patchArticleVotesById = (req, res, next) =>
 {
     const schema = Joi.object
     ({
         inc_votes: Joi.number().integer().min(1)
     });
-    const {value, error} = schema.validate(req.body);
+    const {error} = schema.validate(req.body);
     if(error)
     {
         next({message: error.details[0].message, status:400});

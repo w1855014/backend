@@ -55,6 +55,39 @@ describe('topics', () =>
             });
         });
     });
+
+    describe('POST /api/topics', () =>
+    {
+        test('201: responds with posted object containing expected values', () =>
+        {
+            return request(app)
+            .post('/api/topics')
+            .send({slug: "dogs", description: "Not cats"})
+            .expect(201)
+            .then(({body}) =>
+            {
+                const {topic} = body;
+                expect(topic).toBeInstanceOf(Object);
+                expect(topic).toEqual(
+                {
+                    slug: "dogs",
+                    description: "Not cats"
+                });
+            })
+        });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .post('/api/topics')
+            .send({slug: null, body: "Not cats"})
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
+        });
+    });
 });
 
 describe('articles', () =>
@@ -228,6 +261,56 @@ describe('articles', () =>
         });
     });
 
+    describe('POST /api/articles', () =>
+    {
+        test('201: responds with posted object containing expected values', () =>
+        {
+            return request(app)
+            .post('/api/articles')
+            .send({title: "Test Title", topic: "cats", author: "butter_bridge", body: "Test comment."})
+            .expect(201)
+            .then(({body}) =>
+            {
+                const {article} = body;
+                expect(article).toBeInstanceOf(Object);
+                expect(article).toEqual(
+                {
+                    article_id: 13,
+                    title: "Test Title",
+                    topic: "cats",
+                    author: "butter_bridge",
+                    body: "Test comment.",
+                    created_at: expect.any(String),
+                    votes: 0
+                });
+            })
+        });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .post('/api/articles')
+            .send({title: "Test Title", topic: "cats", author: "butter_bridge", body: null})
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Bad request.")
+            })
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .post('/api/articles')
+            .send({title: "Test Title", topic: "cats", author: "butter", body: "Test comment."})
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
+        });
+    });
+
     describe('PATCH /api/articles/:article_id', () =>
     {
         test('200: responds with updated object containing expected values', () =>
@@ -379,6 +462,55 @@ describe('users', () =>
 
 describe('comments', () =>
 {
+    describe('PATCH /api/comments/:comment_id', () =>
+    {
+        test('200: responds with updated object containing expected values', () =>
+        {
+            return request(app)
+            .patch('/api/comments/1')
+            .send({inc_votes: 1})
+            .expect(200)
+            .then(({body}) =>
+            {
+                const {comment} = body;
+                expect(comment).toBeInstanceOf(Object);
+                expect(comment).toEqual(
+                {
+                    comment_id: 1,
+                    body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                    votes: 17,
+                    author: "butter_bridge",
+                    article_id: 9,
+                    created_at: "2020-04-06T12:17:00.000Z"
+                });
+            });
+        });
+        test('400: returns bad request', () =>
+        {
+            return request(app)
+            .patch('/api/comments/1')
+            .send({inc_votes: null})
+            .expect(400)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe(`"inc_votes" must be a number`);
+            })
+        });
+        test('404: returns not found', () =>
+        {
+            return request(app)
+            .patch('/api/comments/999')
+            .send({inc_votes: 1})
+            .expect(404)
+            .then(({body}) =>
+            {
+                const {msg} = body;
+                expect(msg).toBe("Not found.")
+            })
+        });
+    });
+
     describe('DELETE /api/comments/:comment_id', () =>
     {
         test('204: removes comment with specified id', () =>
